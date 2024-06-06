@@ -1,7 +1,0 @@
-# mysql-configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mysql-configmap
-data:
-  database-url: "mysql://10.0.2.15:3306/test_db"

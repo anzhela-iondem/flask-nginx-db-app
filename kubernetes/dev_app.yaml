@@ -1,18 +1,3 @@
-## Secret variables
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: db-secrets
-# type: Opaque
-# data:
-#   DB_ENGINE:   # base64 encoded value of DB_ENGINE e.g. mysql
-#   DB_HOST:     # base64 encoded value of DB_HOST
-#   DB_NAME:     # base64 encoded value of DB_NAME
-#   DB_USERNAME: # base64 encoded value of DB_USERNAME
-#   DB_PASS:     # base64 encoded value of DB_PASS
-#   DB_PORT:     # base64 encoded value of DB_PORT e.g. 3306
-
-
 # Flask Deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -43,7 +28,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: flask-app-service
-  namespace: production
+  namespace: development
   labels:
     app: flask-app
 spec:
@@ -63,7 +48,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  namespace: production
+  namespace: development
   labels:
     app: nginx
 spec:
@@ -93,7 +78,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nginx-config
-  namespace: production
+  namespace: development
 data:
   default.conf: |
     upstream flask-app {
@@ -117,7 +102,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
-  namespace: production
+  namespace: development
   labels:
     app: nginx
 spec:
