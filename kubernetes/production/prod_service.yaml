@@ -1,0 +1,17 @@
+# prod-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-prod-service
+  labels:
+    app: my-app
+    environment: production
+spec:
+  selector:
+    app: my-app
+    environment: production
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

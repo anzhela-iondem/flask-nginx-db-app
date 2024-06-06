@@ -1,0 +1,235 @@
+# # Secrets
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: db-secrets
+#   namespace: development
+# type: Opaque
+# data:
+#   DB_ROOT_PASS: a2FsaQ==  # ase64 encoded value of MYSQL_ROOT_PASSWORD=kali 
+#   DB_ENGINE: bXlzcWw=  # base64 encoded value of DB_ENGINE=mysql
+#   DB_HOST: MTAuMC4yLjE1Cg==     # base64 encoded value of DB_HOST=10.0.2.15
+#   DB_NAME: dGVzdF9kYgo=         # base64 encoded value of DB_NAME=test_db
+#   DB_USERNAME: YWRtaW5fdXNlcgo= # base64 encoded value of DB_USERNAME=admin_user
+#   DB_PASS: YW5nZWxhaW9uZGVtCg== # base64 encoded value of DB_PASS=angelaiondem
+#   DB_PORT: MzMwNg==             # base64 encoded value of DB_PORT=3306
+
+---
+
+# Flask Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  namespace: development
+  labels:
+    app: flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: flask-app-container
+          image: anzhela26/final-project-app:v1
+          ports:
+            - containerPort: 5005
+          # env:
+          #   - name: MYSQL_HOST
+          #     value: "mysql"
+          #   - name: DB_ROOT_PASSWOD
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: db-secrets
+          #         key: DB_ROOT_PASS
+            # - name: DB_ENGINE
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secrets
+            #       key: DB_ENGINE
+            # - name: DB_HOST
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secrets
+            #       key: DB_HOST
+            # - name: DB_NAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secrets
+            #       key: DB_NAME
+            # - name: DB_USERNAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secrets
+            #       key: DB_USERNAME
+            # - name: DB_PASS
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secrets
+            #       key: DB_PASS
+            # - name: DB_PORT
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secrets
+            #       key: DB_PORT
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app-service
+  namespace: development
+  labels:
+    app: flask-app
+spec:
+  type: ClusterIP
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
+
+
+---
+
+# # MySQL Deployment
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: mysql
+#   namespace: development
+#   labels:
+#     app: mysql
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: mysql
+#   template:
+#     metadata:
+#       labels:
+#         app: mysql
+#     spec:
+#       containers:
+#         - name: mysql-container
+#           image: mysql:latest
+#           env:
+#             - name: MYSQL_ROOT_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: db-secrets
+#                   key: DB_ROOT_PASS
+#             # - name: MYSQL_DATABASE
+#             #   valueFrom:
+#             #     secretKeyRef:
+#             #       name: db-secrets
+#             #       key: DB_NAME
+#             - name: MYSQL_USER
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: db-secrets
+#                   key: DB_USERNAME
+#             - name: MYSQL_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: db-secrets
+#                   key: DB_PASS
+#           ports:
+#             - containerPort: 3306
+#         #   volumeMounts:
+#         # - name: data
+#         #   mountPath: /var/lib/mysql/
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mysql
+#   namespace: development
+#   labels:
+#     app: mysql
+# spec:
+#   type: ClusterIP
+#   selector:
+#     app: mysql
+#   ports:
+#     - protocol: TCP
+#       port: 3306
+#       targetPort: 3306
+
+
+# Nginx deploayment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: development
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+          ports:
+            - containerPort: 5058
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: development
+data:
+  default.conf: |
+    upstream flask-app {
+        server flask-app-service:5005;
+    }
+
+    server {
+        listen 5058;
+        server_name localhost;
+
+        location / {
+            proxy_pass http://flask-app;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: development
+  labels:
+    app: nginx
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5058
