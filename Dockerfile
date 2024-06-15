@@ -7,12 +7,12 @@ ENV PYTHONUNBUFFERED 1
 ENV FLASK_APP run.py
 ENV DEBUG True
 
-ENV DB_ENGINE="" 
-ENV DB_USERNAME=""
-ENV DB_PASS=""
-ENV DB_HOST=""
-ENV DB_PORT=""
-ENV DB_NAME=""
+ENV DB_ENGINE="mysql" 
+ENV DB_USERNAME="username"
+ENV DB_PASS="password"
+ENV DB_HOST="localhost"
+ENV DB_PORT="3306"
+ENV DB_NAME="dbname"
 
 
 # Install system dependencies
