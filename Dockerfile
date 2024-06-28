@@ -7,12 +7,13 @@ ENV PYTHONUNBUFFERED 1
 ENV FLASK_APP run.py
 ENV DEBUG True
 
-ENV DB_ENGINE="mysql" 
-ENV DB_USERNAME="username"
-ENV DB_PASS="password"
-ENV DB_HOST="localhost"
-ENV DB_PORT="3306"
-ENV DB_NAME="dbname"
+# Variables will be taken from the environment or from the .env file.
+ENV DB_ENGINE="" 
+ENV DB_USERNAME=""
+ENV DB_PASS=""
+ENV DB_HOST=""
+ENV DB_PORT=""
+ENV DB_NAME=""
 
 
 # Install system dependencies
@@ -23,7 +24,8 @@ RUN apt-get update && \
     build-essential \
     gcc \
     python3-dev \
-    libmariadb-dev && \
+    libmariadb-dev \
+    mariadb-client && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
