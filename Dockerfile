@@ -39,12 +39,13 @@ RUN pip install mysql-connector-python
 # Copy application code
 COPY . .
 
-# Install and run Flask database migration commands
-RUN pip install python-dotenv && \
-    dotenv run flask db init && \
-    dotenv run flask db migrate && \
-    dotenv run flask db upgrade
+# Install python-dotenv
+RUN pip install python-dotenv
 
+# Run Flask database migration commands separately
+RUN dotenv run flask db init && echo "DB init completed"
+RUN dotenv run flask db migrate && echo "DB migrate completed"
+RUN dotenv run flask db upgrade && echo "DB upgrade completed"
 
 
 # Gunicorn command
