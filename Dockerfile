@@ -42,10 +42,14 @@ COPY . .
 # Install python-dotenv
 RUN pip install python-dotenv
 
+RUN flask db init
+RUN flask db migrate -m "Initial migration"
+RUN flask db upgrade
+
 # Run Flask database migration commands separately
-RUN dotenv run flask db init && echo "DB init completed"
+#RUN dotenv run flask db init && echo "DB init completed"
 #RUN dotenv run flask db migrate && echo "DB migrate completed"
-RUN dotenv run flask db upgrade && echo "DB upgrade completed"
+#RUN dotenv run flask db upgrade && echo "DB upgrade completed"
 
 
 # Gunicorn command
